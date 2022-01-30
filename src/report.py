@@ -8,9 +8,9 @@ from configmain import *
 def generate_report(camid, test_img_path, perfect_img_path):
     # test_img=Image.open(test_img_path)
     test_img = cv2.imread(test_img_path)
-    test_img = cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB)
+    #test_img = cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB)
     perfect_img = cv2.imread(perfect_img_path)
-    perfect_img = cv2.cvtColor(perfect_img, cv2.COLOR_BGR2RGB)
+    #perfect_img = cv2.cvtColor(perfect_img, cv2.COLOR_BGR2RGB)
     test_img = cv2.resize(test_img, (100, 100),
                           interpolation=cv2.INTER_NEAREST)
     perfect_img = cv2.resize(perfect_img, (100, 100),

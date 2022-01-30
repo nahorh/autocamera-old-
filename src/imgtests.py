@@ -102,50 +102,86 @@ def isgray(img):
         return 1
     return 0
 
-
 def checkscale(img):
-    img = np.array(img)
-    if isgray(img):
-        return "Image is in grayscale"
+    img_shape = img.shape
+    # print(img_shape)
+    w = img_shape[0]
+    h = img_shape[1]
+
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    red_low = np.array([0, 1, 1])
+    red_up = np.array([10, 255, 255])
+    red_mask1 = cv2.inRange(hsv, red_low, red_up)
+    red_low = np.array([170, 1, 1])
+    red_up = np.array([179, 255, 255])
+    red_mask2 = cv2.inRange(hsv, red_low, red_up)
+    red_mask = red_mask1+red_mask2
+    redpix = cv2.countNonZero(red_mask)
+    #print('redpix ', redpix)
+    # img = cv2.bitwise_and(img, img, mask=red_mask)
+    # cv2.imshow('g', red_mask)
+    # cv2.waitKey(0)
+
+    green_low = np.array([40, 1, 1])
+    green_up = np.array([70, 255, 255])
+    green_mask = cv2.inRange(hsv, green_low, green_up)
+    # green_low = np.array([65, 5, 5])
+    # green_up = np.array([75, 150, 255])
+    # green_mask2 = cv2.inRange(hsv, green_low, green_up)
+    # green_mask = green_mask1+green_mask2
+
+    greenpix = cv2.countNonZero(green_mask)
+    #print('greenpix ', greenpix)
+    # cv2.imshow('g', green_mask)
+    # cv2.waitKey(0)
+
+    blue_low = np.array([105, 1, 1])
+    blue_high = np.array([130, 255, 255])
+    blue_mask = cv2.inRange(hsv, blue_low, blue_high)
+    bluepix = cv2.countNonZero(blue_mask)
+    #print('bluepix ', bluepix)
+    # cv2.imshow('g', blue_mask)
+    # cv2.waitKey(0)
+
+    if redpix > (w*h*0.6):
+        return "red tint present"
+    elif redpix != 0 and greenpix < (w*h*0.05) and bluepix < (w*h*0.05):
+        return "red tint present"
+    elif greenpix > (w*h*0.6):
+        return "green tint present"
+    elif greenpix != 0 and redpix < (w*h*0.05) and bluepix < (w*h*0.05):
+        return "green tint present"
+    elif bluepix > (w*h*0.6):
+        return "blue tint present"
+    elif bluepix != 0 and redpix < (w*h*0.05) and greenpix < (w*h*0.05):
+        return "blue tint present"
+    elif redpix == 0 and greenpix == 0 and bluepix == 0:
+        return "image is grayscale"
+    elif redpix < (w*h*0.05) and greenpix < (w*h*0.05) and bluepix < (w*h*0.05):
+        return "image is grayscale"
+    # elif redpix > (w*h*0.4) and greenpix > (w*h*0.4):
+    #     return "red green tint"
+    # elif redpix > (w*h*0.4) and bluepix > (w*h*0.4):
+    #     return "Red Blue tint"
+    # elif greenpix > (w*h*0.4) and bluepix > (w*h*0.4):
+    #     return "Blue Green tint"
     else:
-        w, h, x1 = img.shape
-        countb = 0
-        countg = 0
-        countr = 0
-        perfect = 0
-        for i in range(w):
-            for j in range(h):
-                rgb = list(img[i, j])
-                if rgb[0] > 200 and rgb[1] > 200 and rgb[2] > 200:
-                    perfect += 1
-                elif rgb[0] < 200 and rgb[1] < 200 and rgb[2] > 200:
-                    countb += 1
-                elif rgb[0] < 200 and rgb[1] > 200 and rgb[2] < 200:
-                    countg += 1
-                elif rgb[0] > 200 and rgb[1] < 200 and rgb[2] < 200:
-                    countr += 1
-        if perfect > (w*h*0.8):
-            return "Perfect"
-        elif countb > (w*h*0.6):
-            return "Blue scale"
-        elif countg > (w*h*0.6):
-            return "Green scale"
-        elif countr > (w*h*0.6):
-            return "Red scale"
-        else:
-            return "Image is in RGB scale"
+        return "Image is RGB scale."
 
 # Function to check if the captured image is mirror image of perfect image or not
 
-
 def mirror(test_img, perfect_img):
     # why are we flipping?
-    perfect_img = cv2.flip(perfect_img, 1)
-    score = ssim(test_img, perfect_img, multichannel=True)
-    if score >= 0.85:
-        return 1
+    test_img=cv2.cvtColor(test_img,cv2.COLOR_BGR2GRAY)
+    perfect_img=cv2.cvtColor(perfect_img,cv2.COLOR_BGR2GRAY)
+    test_img = cv2.flip(test_img, 1)
+    score = ssim(test_img, perfect_img)
+    #print(score)
+    if score >= 0.75:
+        return "mirror image"
     else:
-        return 0
+        return "not mirror"
 
 
 # Function to detect and return the number of blackspots
